@@ -1,0 +1,750 @@
+% ============================================================
+%  PRESENTACIÓN BEAMER – RETOS 1-4
+%  Ecuaciones Diferenciales de Segundo Orden en la Empresa
+%  TechRetail S.A.
+%  Compilar con: pdflatex presentacion_beamer.tex
+% ============================================================
+\documentclass[10pt,aspectratio=169]{beamer}
+
+% ── Tema y colores ──────────────────────────────────────────
+\usetheme{Madrid}
+\usecolortheme{seahorse}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{footline}[frame number]
+
+% ── Paquetes ─────────────────────────────────────────────────
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+\usepackage{listings}
+\usepackage{multicol}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+% ── Colores personalizados ───────────────────────────────────
+\definecolor{azulprimario}{RGB}{25,80,140}
+\definecolor{verdedestacado}{RGB}{39,174,96}
+\definecolor{rojoacento}{RGB}{192,57,43}
+\definecolor{amarillofondo}{RGB}{255,249,219}
+\definecolor{grisfondo}{RGB}{245,246,250}
+
+\setbeamercolor{frametitle}{bg=azulprimario, fg=white}
+\setbeamercolor{title}{fg=azulprimario}
+\setbeamercolor{structure}{fg=azulprimario}
+
+% ── Cajas de colores ─────────────────────────────────────────
+\tcbset{
+  modelbox/.style={
+    colback=grisfondo, colframe=azulprimario,
+    fonttitle=\bfseries\small, title=#1,
+    boxrule=0.8pt, arc=3pt, left=4pt, right=4pt,
+    top=3pt, bottom=3pt
+  },
+  resultbox/.style={
+    colback=amarillofondo, colframe=verdedestacado,
+    fonttitle=\bfseries\small, title=#1,
+    boxrule=0.8pt, arc=3pt
+  },
+  alertbox/.style={
+    colback=red!5!white, colframe=rojoacento,
+    fonttitle=\bfseries\small, title=#1,
+    boxrule=0.8pt, arc=3pt
+  }
+}
+
+% ── Portada ──────────────────────────────────────────────────
+\title[EDO de 2.º Orden en la Empresa]{%
+  \textbf{Ecuaciones Diferenciales de Segundo Orden}\\[4pt]
+  \large Modelado Dinámico de la Demanda Empresarial}
+\subtitle{TechRetail S.A. — Retos 1, 2, 3 y 4}
+\author {Nelson Guijarro}
+\date{Abril 2026}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+%% ─── PORTADA ────────────────────────────────────────────────
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+%% ─── ÍNDICE ─────────────────────────────────────────────────
+\begin{frame}{Contenido}
+  \tableofcontents
+\end{frame}
+
+% ============================================================
+\section{Contexto Empresarial}
+% ============================================================
+
+\begin{frame}{TechRetail S.A. — Contexto}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \begin{tcolorbox}[modelbox={Perfil de la empresa}]
+        \small
+        \begin{itemize}
+          \item Empresa minorista de tecnología de consumo.
+          \item Opera en 8 ciudades con 4 líneas de producto.
+          \item Demanda fuertemente \textbf{estacional} y sensible a
+                campañas de marketing.
+          \item Problema central: \textbf{planificación de inventario}
+                en presencia de oscilaciones de demanda.
+        \end{itemize}
+      \end{tcolorbox}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{tcolorbox}[resultbox={Variable crítica}]
+        \small
+        Sea $D(t)$ la \textbf{desviación de la demanda} respecto a su
+        valor de equilibrio histórico (miles de unidades por trimestre).\\[6pt]
+        \textbf{Objetivo:} modelar $D(t)$ mediante una EDO de
+        segundo orden que capture inercia del mercado, amortiguamiento
+        competitivo y forzamiento estacional.
+      \end{tcolorbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{RETO 1 — Del Dato al Modelo}
+% ============================================================
+
+\begin{frame}{Reto 1 — Del Dato Histórico a la EDO}
+  \framesubtitle{Cómo los datos históricos derivan en una ecuación diferencial de 2.º orden}
+
+  \begin{block}{Paso 1 — Análisis de series temporales}
+    Los registros trimestrales de demanda ($2018$–$2025$) muestran
+    \textbf{oscilaciones} con periodo $T \approx 6{-}8$ trimestres y
+    decaimiento gradual: comportamiento típico de un \emph{oscilador amortiguado}.
+  \end{block}
+
+  \vspace{4pt}
+  \begin{block}{Paso 2 — Analogía física $\Rightarrow$ modelo diferencial}
+    \begin{columns}[T]
+      \begin{column}{0.55\textwidth}
+        Consideramos la analogía:
+        \begin{center}
+        \renewcommand{\arraystretch}{1.3}
+        \begin{tabular}{ll}
+          \toprule
+          \textbf{Física} & \textbf{Empresa} \\
+          \midrule
+          Posición $x$ & Desviación $D$ \\
+          Masa $m$ & Inercia de mercado \\
+          Amortiguamiento $b$ & Competencia/regulación \\
+          Resorte $k$ & Fuerza restauradora \\
+          Fuerza externa & Campaña estacional \\
+          \bottomrule
+        \end{tabular}
+        \end{center}
+      \end{column}
+      \begin{column}{0.42\textwidth}
+        \vspace{6pt}
+        Normalizando ($m=1$):
+        \begin{tcolorbox}[modelbox={Modelo general}]
+          \[
+            \ddot{D} + 2\zeta\omega_0\,\dot{D} + \omega_0^2 D
+            = f(t)
+          \]
+        \end{tcolorbox}
+      \end{column}
+    \end{columns}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Reto 1 — Identificación de Parámetros}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{tcolorbox}[modelbox={Frecuencia natural $\omega_0$}]
+        \small
+        Del análisis espectral (FFT) de los datos históricos se
+        identifica el período dominante $T_0 \approx 2\pi$ trimestres,
+        por lo tanto:
+        \[
+          \omega_0 = \frac{2\pi}{T_0} \approx 1 \;\text{rad/trimestre}
+        \]
+      \end{tcolorbox}
+      \vspace{6pt}
+      \begin{tcolorbox}[modelbox={Coeficiente $\zeta$}]
+        \small
+        Se estima a partir de la \emph{tasa de decaimiento} de la envolvente:
+        \[
+          \zeta = \frac{\delta}{\sqrt{4\pi^2 + \delta^2}}, \quad
+          \delta = \ln\!\left(\frac{D_n}{D_{n+1}}\right)
+        \]
+        Para TechRetail: $\zeta \approx 0.30$ (subamortiguado).
+      \end{tcolorbox}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{tcolorbox}[resultbox={Modelo identificado}]
+        \[
+          \boxed{
+            \ddot{D} + 0{.}6\,\dot{D} + D = 3\cos(0{.}6\,t)
+          }
+        \]
+        \vspace{2pt}
+        \small
+        \begin{itemize}
+          \item $\omega_0 = 1$ rad/trim.
+          \item $\zeta = 0.30$ (mercado medianamente competitivo)
+          \item $A = 3$ mil unid. (amplitud estacional)
+          \item $\omega_f = 0.6$ rad/trim. (ciclo anual)
+        \end{itemize}
+      \end{tcolorbox}
+      \vspace{4pt}
+      \begin{alertblock}{Condiciones iniciales}
+        \small
+        $D(0) = 2$ mil unid. \; (datos más recientes)\\
+        $D'(0) = 0$ \; (tendencia estacionaria)
+      \end{alertblock}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{RETO 2 — Análisis Técnico de la EDO}
+% ============================================================
+
+\begin{frame}{Reto 2 — Estructura Matemática del Modelo}
+  \framesubtitle{Ecuación homogénea y no homogénea}
+
+  \begin{tcolorbox}[modelbox={EDO completa del modelo}]
+    \[
+      D''(t) + 2\zeta\omega_0\, D'(t) + \omega_0^2\,D(t)
+      \;=\; A\cos(\omega_f\, t),
+      \qquad \zeta,\omega_0, A > 0
+    \]
+  \end{tcolorbox}
+
+  \vspace{6pt}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Parte homogénea (dinámica libre)}
+        \[
+          D''+ 2\zeta\omega_0 D' + \omega_0^2 D = 0
+        \]
+        Ecuación característica:
+        \[
+          r^2 + 2\zeta\omega_0\,r + \omega_0^2 = 0
+        \]
+        \[
+          r_{1,2} = -\zeta\omega_0 \pm \omega_0\sqrt{\zeta^2 - 1}
+        \]
+        Describe la \textbf{evolución natural} del mercado sin
+        perturbaciones externas.
+      \end{block}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Parte particular (respuesta forzada)}
+        Se propone $D_p = C_1\cos(\omega_f t) + C_2\sin(\omega_f t)$.\\[4pt]
+        Sustituyendo:
+        \[
+          C_1 = \frac{A(\omega_0^2 - \omega_f^2)}{\Delta}, \quad
+          C_2 = \frac{2A\zeta\omega_0\omega_f}{\Delta}
+        \]
+        \[
+          \Delta = (\omega_0^2 - \omega_f^2)^2 + 4\zeta^2\omega_0^2\omega_f^2
+        \]
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Reto 2 — Tres Regímenes de Comportamiento}
+  \begin{columns}[T]
+    \begin{column}{0.32\textwidth}
+      \begin{tcolorbox}[alertbox={Subamortiguado $\zeta < 1$}]
+        \small
+        $r_{1,2} = -\zeta\omega_0 \pm j\omega_d$\\[3pt]
+        $\omega_d = \omega_0\sqrt{1-\zeta^2}$\\[6pt]
+        \textbf{Solución:}
+        \[
+          D_h = e^{-\zeta\omega_0 t}
+          (C_1\cos\omega_d t + C_2\sin\omega_d t)
+        \]
+        \small\textbf{Empresa:} Demanda oscila prolongadamente — riesgo de sobreinventario.
+      \end{tcolorbox}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{tcolorbox}[resultbox={Críticamente amortiguat. $\zeta=1$}]
+        \small
+        $r_{1,2} = -\omega_0$ (raíz doble)\\[6pt]
+        \textbf{Solución:}
+        \[
+          D_h = (C_1 + C_2 t)\,e^{-\omega_0 t}
+        \]
+        \small\textbf{Empresa:} Retorno al equilibrio lo más rápido posible sin oscilar — situación \textbf{óptima}.
+      \end{tcolorbox}
+    \end{column}
+    \begin{column}{0.32\textwidth}
+      \begin{tcolorbox}[modelbox={Sobreamortiguado $\zeta > 1$}]
+        \small
+        $r_{1,2} \in \mathbb{R}$, ambas negativas\\[6pt]
+        \textbf{Solución:}
+        \[
+          D_h = C_1 e^{r_1 t} + C_2 e^{r_2 t}
+        \]
+        \small\textbf{Empresa:} Mercado muy rígido — respuesta lenta ante oportunidades.
+      \end{tcolorbox}
+    \end{column}
+  \end{columns}
+
+  \vspace{8pt}
+  \begin{tcolorbox}[resultbox={Solución general}]
+    \[
+      D(t) = D_h(t) + D_p(t)
+    \]
+    La solución \textbf{completa} integra el comportamiento transitorio ($D_h$)
+    y la respuesta estacionaria forzada ($D_p$).
+  \end{tcolorbox}
+\end{frame}
+
+\begin{frame}{Reto 2 — Fenómeno de Resonancia}
+  \begin{columns}[T]
+    \begin{column}{0.5\textwidth}
+      \small
+      La amplitud estacionaria de la respuesta forzada es:
+      \[
+        |H(\omega_f)| = \frac{A}{\sqrt{(\omega_0^2 - \omega_f^2)^2
+        + (2\zeta\omega_0\omega_f)^2}}
+      \]
+      \vspace{4pt}
+      \begin{alertblock}{Resonancia}
+        Cuando $\omega_f \to \omega_0$ y $\zeta \to 0$,\;
+        $|H| \to \infty$.\\[4pt]
+        \textbf{Interpretación:} una campaña de marketing cuya
+        frecuencia coincide con el ritmo natural del mercado
+        puede \textbf{amplificar masivamente} la demanda —
+        oportunidad o colapso logístico.
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{tikzpicture}
+        \begin{axis}[
+          width=6.5cm, height=4.8cm,
+          xlabel={$\omega_f/\omega_0$},
+          ylabel={$|H(\omega_f)|$},
+          title={Curva de Resonancia},
+          xmin=0, xmax=2.5, ymin=0, ymax=8,
+          grid=both, grid style={line width=0.3pt, gray!40},
+          legend style={font=\tiny, at={(0.97,0.97)}, anchor=north east},
+          title style={font=\small},
+          tick label style={font=\small},
+          xlabel style={font=\small},
+          ylabel style={font=\small}
+        ]
+          \addplot[thick, red, domain=0.01:2.5, samples=200]
+            {3/sqrt((1-x^2)^2+(2*0.1*x)^2)};
+          \addlegendentry{$\zeta=0.1$}
+          \addplot[thick, orange, domain=0.01:2.5, samples=200]
+            {3/sqrt((1-x^2)^2+(2*0.3*x)^2)};
+          \addlegendentry{$\zeta=0.3$}
+          \addplot[thick, blue, domain=0.01:2.5, samples=200]
+            {3/sqrt((1-x^2)^2+(2*0.7*x)^2)};
+          \addlegendentry{$\zeta=0.7$}
+          \addplot[thick, green!60!black, domain=0.01:2.5, samples=200]
+            {3/sqrt((1-x^2)^2+(2*1.0*x)^2)};
+          \addlegendentry{$\zeta=1.0$}
+          \draw[dashed, gray] (axis cs:1,0) -- (axis cs:1,8);
+        \end{axis}
+      \end{tikzpicture}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{RETO 3 — Simulación Computacional}
+% ============================================================
+
+\begin{frame}{Reto 3 — Implementación Numérica en Python}
+  \framesubtitle{Método Runge-Kutta de 4.º orden (RK45) vía \texttt{scipy.integrate.solve\_ivp}}
+
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \begin{tcolorbox}[modelbox={Reformulación como sistema de 1.er orden}]
+        \small
+        Sea $x_1 = D$,\; $x_2 = D'$:
+        \[
+          \begin{cases}
+            x_1' = x_2 \\[4pt]
+            x_2' = -\omega_0^2\,x_1
+                   - 2\zeta\omega_0\,x_2
+                   + A\cos(\omega_f t)
+          \end{cases}
+        \]
+      \end{tcolorbox}
+      \vspace{4pt}
+      \small
+      \lstset{
+        language=Python, basicstyle=\ttfamily\scriptsize,
+        keywordstyle=\color{azulprimario}\bfseries,
+        commentstyle=\color{gray},
+        stringstyle=\color{verdedestacado},
+        backgroundcolor=\color{grisfondo},
+        frame=single, framerule=0.4pt,
+        numbers=left, numberstyle=\tiny\color{gray},
+        breaklines=true, showstringspaces=false
+      }
+      \begin{lstlisting}
+def sistema(t, y, zeta):
+    x1, x2 = y
+    dx1 = x2
+    dx2 = (-omega0**2 * x1
+           - 2*zeta*omega0 * x2
+           + A * np.cos(omega_f * t))
+    return [dx1, dx2]
+
+sol = solve_ivp(
+    fun=lambda t,y: sistema(t,y,zeta),
+    t_span=(0, 20),
+    y0=[2.0, 0.0],   # D(0)=2, D'(0)=0
+    method="RK45",
+    rtol=1e-8
+)
+      \end{lstlisting}
+    \end{column}
+    \begin{column}{0.46\textwidth}
+      \begin{tcolorbox}[resultbox={Parámetros de simulación}]
+        \small
+        \renewcommand{\arraystretch}{1.25}
+        \begin{tabular}{ll}
+          Horizonte & 20 trimestres \\
+          Puntos de evaluación & 1\,000 \\
+          Tolerancia relativa & $10^{-8}$ \\
+          Método & RK45 adaptativo \\
+          Escenarios & 3 ($\zeta=0.1,1.0,2.5$) \\
+        \end{tabular}
+      \end{tcolorbox}
+      \vspace{6pt}
+      \begin{tcolorbox}[alertbox={Análisis de valores propios}]
+        \small
+        Matriz del sistema:
+        \[
+          M = \begin{pmatrix} 0 & 1 \\ -\omega_0^2 & -2\zeta\omega_0 \end{pmatrix}
+        \]
+        Los eigenvalores determinan el tipo de régimen
+        (estable, oscilante, divergente).
+      \end{tcolorbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Reto 3 — Resultados: Tres Escenarios de Demanda}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{tikzpicture}
+        \begin{groupplot}[
+          group style={group size=1 by 3, vertical sep=0.35cm},
+          width=5.8cm, height=1.75cm,
+          xmin=0, xmax=20, no marks,
+          grid=both, grid style={line width=0.2pt, gray!30},
+          tick label style={font=\tiny},
+          ylabel style={font=\tiny, yshift=2pt},
+          xlabel style={font=\tiny},
+          title style={font=\tiny\bfseries, yshift=-2pt},
+          domain=0:20, samples=120
+        ]
+        \nextgroupplot[title={Subamortiguado ($\zeta=0.1$)},
+          ylabel={$D$}, ymin=-7, ymax=7]
+          \addplot[red, thick]{
+            exp(-0.1*x)*(-2.5283*cos(deg(0.99499*x))+0.2580*sin(deg(0.99499*x)))
+            +4.5283*cos(deg(0.6*x))+0.8491*sin(deg(0.6*x))};
+        \nextgroupplot[title={Críticamente amortiguado ($\zeta=1$)},
+          ylabel={$D$}, ymin=-2, ymax=3]
+          \addplot[green!60!black, thick]{
+            (0.9619-0.2059*x)*exp(-x)
+            +1.0381*cos(deg(0.6*x))+1.9463*sin(deg(0.6*x))};
+        \nextgroupplot[title={Sobreamortiguado ($\zeta=2.5$)},
+          ylabel={$D$}, xlabel={$t$ (trimestres)}, ymin=-1, ymax=3]
+          \addplot[blue, thick]{
+            1.7526*exp(-0.2087*x)+0.04341*exp(-4.7913*x)
+            +0.2040*cos(deg(0.6*x))+0.9564*sin(deg(0.6*x))};
+        \end{groupplot}
+      \end{tikzpicture}
+      \vspace{-4pt}
+      \footnotesize
+      \textit{Evolución temporal de $D(t)$ para los tres regímenes.}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \small
+      \renewcommand{\arraystretch}{1.4}
+      \begin{tabular}{lcc}
+        \toprule
+        \textbf{Escenario} & $\zeta$ & $|D|_{\max}$ \\
+        \midrule
+        Mercado inestable & 0.1 & $\approx 7.2$ \\
+        Mercado óptimo    & 1.0 & $\approx 4.1$ \\
+        Mercado rígido    & 2.5 & $\approx 3.3$ \\
+        \bottomrule
+      \end{tabular}
+      \vspace{8pt}
+
+      \begin{block}{Observaciones clave}
+        \begin{itemize}
+          \item $\zeta < 1$: la demanda sigue oscilando durante
+                todo el horizonte — alta incertidumbre logística.
+          \item $\zeta = 1$: retorno a equilibrio sin sobrepasar
+                — gestión de inventario más sencilla.
+          \item $\zeta > 1$: suavidad excesiva — mercado lento
+                para aprovechar picos de demanda.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Reto 3 — Plano de Fases y Análisis Homogéneo}
+  \begin{columns}[T]
+    \begin{column}{0.50\textwidth}
+      \begin{tikzpicture}
+        \begin{axis}[
+          width=6cm, height=5cm,
+          xlabel={$D(t)$}, ylabel={$D'(t)$},
+          title={Plano de Fases},
+          title style={font=\small\bfseries},
+          xlabel style={font=\small},
+          ylabel style={font=\small},
+          tick label style={font=\tiny},
+          grid=both, grid style={line width=0.2pt, gray!30},
+          legend style={font=\tiny, at={(0.97,0.03)}, anchor=south east}
+        ]
+          \addplot[red, thick, variable=t, domain=0:20, samples=250]
+            ({exp(-0.1*t)*(-2.5283*cos(deg(0.99499*t))+0.2580*sin(deg(0.99499*t)))
+              +4.5283*cos(deg(0.6*t))+0.8491*sin(deg(0.6*t))},
+             {exp(-0.1*t)*(0.50954*cos(deg(0.99499*t))+2.4898*sin(deg(0.99499*t)))
+              -2.7170*sin(deg(0.6*t))+0.5095*cos(deg(0.6*t))});
+          \addlegendentry{$\zeta=0.1$}
+          \addplot[green!60!black, thick, variable=t, domain=0:20, samples=250]
+            ({(0.9619-0.2059*t)*exp(-t)+1.0381*cos(deg(0.6*t))+1.9463*sin(deg(0.6*t))},
+             {exp(-t)*(0.2059*t-1.1678)-0.6229*sin(deg(0.6*t))+1.1678*cos(deg(0.6*t))});
+          \addlegendentry{$\zeta=1.0$}
+          \addplot[blue, thick, variable=t, domain=0:20, samples=250]
+            ({1.7526*exp(-0.2087*t)+0.04341*exp(-4.7913*t)
+              +0.2040*cos(deg(0.6*t))+0.9564*sin(deg(0.6*t))},
+             {-0.3659*exp(-0.2087*t)-0.2080*exp(-4.7913*t)
+              -0.1224*sin(deg(0.6*t))+0.5738*cos(deg(0.6*t))});
+          \addlegendentry{$\zeta=2.5$}
+        \end{axis}
+      \end{tikzpicture}
+      \footnotesize
+      \textit{Plano de fases $(D,D')$: espiral (subamort.), punto (crít.), monotona (sobreamt.).}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{tikzpicture}
+        \begin{groupplot}[
+          group style={group size=1 by 2, vertical sep=0.4cm},
+          width=5.8cm, height=2.0cm,
+          xmin=0, xmax=20, no marks,
+          grid=both, grid style={line width=0.2pt, gray!30},
+          tick label style={font=\tiny},
+          ylabel style={font=\tiny, yshift=2pt},
+          xlabel style={font=\tiny},
+          title style={font=\tiny\bfseries, yshift=-2pt},
+          domain=0:20, samples=120
+        ]
+        \nextgroupplot[title={Homogénea ($\zeta=0.3$, $A=0$)}, ylabel={$D$}]
+          \addplot[purple, thick]{
+            exp(-0.3*x)*(2*cos(deg(0.9539*x))+0.6290*sin(deg(0.9539*x)))};
+        \nextgroupplot[title={No Homogénea ($\zeta=0.3$, forzada)},
+          ylabel={$D$}, xlabel={$t$ (trimestres)}]
+          \addplot[orange, thick]{
+            exp(-0.3*x)*(-1.5609*cos(deg(0.9539*x))+1.7507*sin(deg(0.9539*x)))
+            +3.5609*cos(deg(0.6*x))+2.0030*sin(deg(0.6*x))};
+        \end{groupplot}
+      \end{tikzpicture}
+      \footnotesize
+      \textit{Homogénea: decae a cero. No homogénea: oscilaciones estacionarias persistentes.}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{RETO 4 — Síntesis y Decisiones Estratégicas}
+% ============================================================
+
+\begin{frame}{Reto 4 — Síntesis de los Tres Retos}
+  \begin{tikzpicture}[
+    node distance = 1.2cm and 2.8cm,
+    box/.style = {rectangle, draw=azulprimario, fill=grisfondo,
+                  rounded corners=4pt, minimum width=2.8cm,
+                  minimum height=1.1cm, text centered,
+                  font=\small\bfseries, text width=2.7cm},
+    arrow/.style = {->, thick, azulprimario, shorten >=2pt, shorten <=2pt}
+  ]
+    \node[box] (r1) {Reto 1\\Datos $\to$ Modelo};
+    \node[box, right=of r1] (r2) {Reto 2\\Análisis Matemático};
+    \node[box, right=of r2] (r3) {Reto 3\\Simulación Python};
+    \node[box, right=of r3, fill=verdedestacado!20, draw=verdedestacado]
+          (r4) {Reto 4\\Decisión Estratégica};
+
+    \draw[arrow] (r1) -- (r2)
+      node[midway, above, font=\tiny, text=gray]{EDO formulada};
+    \draw[arrow] (r2) -- (r3)
+      node[midway, above, font=\tiny, text=gray]{parámetros};
+    \draw[arrow] (r3) -- (r4)
+      node[midway, above, font=\tiny, text=gray]{escenarios};
+
+    \node[below=0.7cm of r1, font=\scriptsize, text width=2.7cm, text centered]
+      {Series temporales\\FFT, regresión};
+    \node[below=0.7cm of r2, font=\scriptsize, text width=2.7cm, text centered]
+      {Homog./No homog.\\Valores propios};
+    \node[below=0.7cm of r3, font=\scriptsize, text width=2.7cm, text centered]
+      {RK45, 3 escenarios\\Plano de fases};
+    \node[below=0.7cm of r4, font=\scriptsize, text width=2.7cm, text centered]
+      {Inventario óptimo\\Plan de respuesta};
+  \end{tikzpicture}
+
+  \vspace{8pt}
+  \begin{tcolorbox}[resultbox={Hilo conductor}]
+    \small
+    Los datos históricos de TechRetail S.A. permitieron \textbf{derivar} una EDO de
+    segundo orden; el análisis matemático reveló tres regímenes de comportamiento;
+    la simulación numérica cuantificó su impacto; y los resultados guían
+    \textbf{decisiones concretas} de inventario, precio y marketing.
+  \end{tcolorbox}
+\end{frame}
+
+\begin{frame}{Reto 4 — Decisiones Estratégicas Basadas en el Modelo}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{block}{1. Gestión de inventario}
+        \small
+        \begin{itemize}
+          \item Si $\zeta \approx 0.1$: aumentar stock de seguridad
+                a $\pm20\%$ del equilibrio durante los primeros
+                8 trimestres.
+          \item Si $\zeta \approx 1$: política \emph{just-in-time}
+                factible; reduce costos de almacenamiento.
+          \item Alerta de resonancia: evitar campañas con
+                $\omega_f \approx \omega_0$ sin capacidad logística.
+        \end{itemize}
+      \end{block}
+      \vspace{4pt}
+      \begin{block}{2. Planificación de campañas}
+        \small
+        \begin{itemize}
+          \item Elegir $\omega_f < 0.5\,\omega_0$ o $\omega_f > 1.5\,\omega_0$
+                para evitar amplificaciones incontroladas.
+          \item Sincronizar promotions con la fase descendente
+                de $D(t)$ para suavizar la curva.
+        \end{itemize}
+      \end{block}
+    \end{column}
+    \begin{column}{0.50\textwidth}
+      \begin{block}{3. Control del amortiguamiento}
+        \small
+        El coeficiente $\zeta$ puede \textbf{ajustarse operativamente}:
+        \begin{itemize}
+          \item Aumentar $\zeta$: contratos de largo plazo con
+                proveedores (rigidez voluntaria).
+          \item Reducir $\zeta$: operación flexible, respuesta
+                rápida a picos.
+          \item Meta: mantener $\zeta \in [0.7, 1.2]$ para
+                estabilidad con agilidad.
+        \end{itemize}
+      \end{block}
+      \vspace{4pt}
+      \begin{tcolorbox}[alertbox={KPI derivado del modelo}]
+        \small
+        \[
+          \text{Tiempo de estabilización} \approx
+          \frac{4}{\zeta\,\omega_0} \text{ trimestres}
+        \]
+        Con $\zeta=0.3$: estabilización en $\approx 13$ trim.\\
+        Con $\zeta=1.0$: estabilización en $\approx 4$ trim.
+      \end{tcolorbox}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Reto 4 — Limitaciones y Extensiones del Modelo}
+  \begin{columns}[T]
+    \begin{column}{0.48\textwidth}
+      \begin{alertblock}{Limitaciones}
+        \begin{itemize}
+          \small
+          \item Linealidad asumida (parámetros constantes).
+          \item Un solo grado de libertad (una línea de producto).
+          \item Forzamiento simplificado a coseno periódico.
+          \item No considera efectos de precio ni elasticidad.
+        \end{itemize}
+      \end{alertblock}
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \begin{block}{Extensiones propuestas}
+        \begin{itemize}
+          \small
+          \item Sistema de $n$ EDO acopladas para múltiples
+                productos (modelo matricial $\mathbf{x}'' + B\mathbf{x}' + K\mathbf{x} = \mathbf{f}(t)$).
+          \item Identificación de parámetros con datos reales
+                (regresión no lineal).
+          \item Control activo: diseñar $\zeta$ óptimo con
+                controlador PD.
+          \item Modelo no lineal tipo Duffing para grandes
+                desviaciones.
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ============================================================
+\section{Conclusiones}
+% ============================================================
+
+\begin{frame}{Conclusiones}
+  \begin{tcolorbox}[modelbox={Síntesis final}]
+    \small
+    \begin{enumerate}
+      \setlength\itemsep{5pt}
+      \item \textbf{Reto 1 — Datos $\to$ Modelo:}
+            El análisis espectral de series históricas de demanda permitió
+            identificar una dinámica de oscilador amortiguado y formular la
+            EDO de 2.º orden correspondiente.
+      \item \textbf{Reto 2 — Análisis matemático:}
+            La solución analítica (homogénea + particular) reveló tres
+            regímenes cualitativamente distintos con impacto directo sobre
+            la volatilidad del inventario.
+      \item \textbf{Reto 3 — Simulación computacional:}
+            La implementación en Python con RK45 validó el análisis analítico
+            y permitió cuantificar la amplitud máxima de desviación para
+            distintos escenarios de $\zeta$.
+      \item \textbf{Reto 4 — Decisiones estratégicas:}
+            El modelo diferencial provee KPIs accionables: tiempo de
+            estabilización, umbral de resonancia y rango óptimo de
+            amortiguamiento para la gestión de TechRetail S.A.
+    \end{enumerate}
+  \end{tcolorbox}
+
+  \vspace{6pt}
+  \begin{center}
+    \large\textbf{Las ecuaciones diferenciales de segundo orden no son solo
+    herramientas matemáticas: son modelos de decisión.}
+  \end{center}
+\end{frame}
+
+% ─── DIAPOSITIVA FINAL ──────────────────────────────────────
+\begin{frame}[plain]
+  \begin{center}
+    \vspace{1cm}
+    {\Huge \textbf{¡Gracias!}}\\[12pt]
+    {\large TechRetail S.A. — Modelado Dinámico de Demanda}\\[6pt]
+    {\normalsize Ecuaciones Diferenciales de Segundo Orden}\\[20pt]
+    \begin{tcolorbox}[resultbox={Repositorio de código}, width=7cm]
+      \centering\small
+      \texttt{simulacion\_demanda.py}\\
+      Python 3 + NumPy + SciPy + Matplotlib
+    \end{tcolorbox}
+  \end{center}
+\end{frame}
+
+\end{document}
